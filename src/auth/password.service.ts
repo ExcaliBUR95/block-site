@@ -8,6 +8,6 @@ export class PasswordService {
   }
 
   getHash(password: string, salt: string) {
-    return pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString()
+    return pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
   }
 }

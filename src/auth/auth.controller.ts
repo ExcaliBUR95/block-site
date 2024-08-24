@@ -8,7 +8,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { GetSessiongInfoDto, SignInBodyDto, SignUpBodyDto } from './dto';
+import { GetSessionInfoDto, SignInBodyDto, SignUpBodyDto } from './dto';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
@@ -25,35 +25,36 @@ export class AuthController {
 
   @Post('sign-up')
   @ApiCreatedResponse()
-  async sigUp(
-    @Body() SignUpBodyDto: SignUpBodyDto,
+  async signUp(
+    @Body() body: SignUpBodyDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const { accessToken } = await this.authService.signUp(
-      SignUpBodyDto.email,
-      SignUpBodyDto.password,
+      body.email,
+      body.password,
     );
 
     this.cookieService.setToken(res, accessToken);
   }
 
-  @Post('sing-in')
+  @Post('sign-in')
   @ApiOkResponse()
   @HttpCode(HttpStatus.OK)
   async signIn(
-    @Body() SignInBodyDto: SignInBodyDto,
+    @Body() body: SignInBodyDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const accessToken = await this.authService.signIn(
-      SignInBodyDto.email,
-      SignInBodyDto.password,
+    const { accessToken } = await this.authService.signIn(
+      body.email,
+      body.password,
     );
 
-    return this.cookieService.setToken(res, accessToken);
+    this.cookieService.setToken(res, accessToken);
   }
 
   @Post('sign-out')
   @ApiOkResponse()
+  @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
   signOut(@Res({ passthrough: true }) res: Response) {
     this.cookieService.removeToken(res);
@@ -61,10 +62,10 @@ export class AuthController {
 
   @Get('session')
   @ApiOkResponse({
-    type: GetSessiongInfoDto,
+    type: GetSessionInfoDto,
   })
-  @UseGuards(AuthController)
-  getSession(@SessionInfo() session: GetSessiongInfoDto) {
+  @UseGuards(AuthGuard)
+  getSessionInfo(@SessionInfo() session: GetSessionInfoDto) {
     return session;
   }
 }
